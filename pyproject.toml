@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hainan-settlement-tool"
+version = "0.1.0"
+description = "海南售电结算自动化工具"
+requires-python = ">=3.8"
+dependencies = [
+    "openpyxl>=3.1,<4",
+]
+
+[project.scripts]
+hainan-settlement-tool = "hainan_settlement_tool.gui:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
