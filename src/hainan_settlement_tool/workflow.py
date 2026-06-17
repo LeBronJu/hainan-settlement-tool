@@ -666,7 +666,9 @@ def run_settlement(
     *,
     month: int,
     ledger_path: Path,
-    template_root: Path,
+    template_root: Path | None = None,
+    proxy_template_dir: Path | None = None,
+    inter_template_dir: Path | None = None,
     summary_template: Path,
     output_dir: Path,
     final_summary_name: str | None = None,
@@ -675,8 +677,21 @@ def run_settlement(
 ) -> tuple[Path, Path, dict[str, Any]]:
     if not ledger_path.exists():
         raise FileNotFoundError(f"找不到台账：{ledger_path}")
-    if not template_root.exists():
-        raise FileNotFoundError(f"找不到分表模板文件夹：{template_root}")
+    if template_root:
+        proxy_template_dir = proxy_template_dir or template_root / "2026年代理 - 海南"
+        inter_template_dir = inter_template_dir or template_root / "2026年居间 - 海南"
+    if not proxy_template_dir:
+        raise ValueError("请选择上月代理分表文件夹：2026年代理 - 海南")
+    if not inter_template_dir:
+        raise ValueError("请选择上月居间分表文件夹：2026年居间 - 海南")
+    if not proxy_template_dir.exists():
+        raise FileNotFoundError(f"找不到上月代理分表文件夹：{proxy_template_dir}")
+    if not inter_template_dir.exists():
+        raise FileNotFoundError(f"找不到上月居间分表文件夹：{inter_template_dir}")
+    if not proxy_template_dir.is_dir():
+        raise ValueError(f"上月代理分表路径不是文件夹：{proxy_template_dir}")
+    if not inter_template_dir.is_dir():
+        raise ValueError(f"上月居间分表路径不是文件夹：{inter_template_dir}")
     if not summary_template.exists():
         raise FileNotFoundError(f"找不到汇总表模板：{summary_template}")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -696,7 +711,16 @@ def run_settlement(
         names = "、".join(item["customer"] for item in owner_missing_rows[:10])
         raise ValueError(f"{month}月结算明细存在负责人缺失：{names}")
 
-    totals = build_split_files(template_root, output_dir, month, proxy_rows, inter_rows)
+    template_root_for_compat = template_root or proxy_template_dir.parent
+    totals = build_split_files(
+        template_root_for_compat,
+        output_dir,
+        month,
+        proxy_rows,
+        inter_rows,
+        proxy_template_root=proxy_template_dir,
+        inter_template_root=inter_template_dir,
+    )
     summary_path = build_summary(summary_template, output_dir, month, totals)
     final_summary_path = output_dir / (final_summary_name or f"【2026年海南省代理费汇总表-{month}月自动化】.xlsx")
     if summary_path != final_summary_path:
@@ -715,7 +739,9 @@ def run_settlement(
     report = {
         "month": month,
         "ledger": str(ledger_path),
-        "template_root": str(template_root),
+        "template_root": str(template_root) if template_root else None,
+        "proxy_template_dir": str(proxy_template_dir),
+        "inter_template_dir": str(inter_template_dir),
         "summary_template": str(summary_template),
         "output_dir": str(output_dir),
         "summary": str(final_summary_path),
@@ -841,7 +867,9 @@ def build_parser() -> argparse.ArgumentParser:
     settlement = sub.add_parser("settlement", help="由已补齐台账生成代理/居间分表和汇总表")
     add_common_month(settlement)
     settlement.add_argument("--ledger", required=True, help="已补齐的本月台账")
-    settlement.add_argument("--template-root", required=True, help="上月结算文件夹，里面要有 2026年代理 - 海南 / 2026年居间 - 海南")
+    settlement.add_argument("--proxy-template-dir", help="上月代理分表文件夹，即 2026年代理 - 海南")
+    settlement.add_argument("--inter-template-dir", help="上月居间分表文件夹，即 2026年居间 - 海南")
+    settlement.add_argument("--template-root", help="兼容旧参数：上月结算文件夹，里面要有代理/居间两个分表文件夹")
     settlement.add_argument("--summary-template", required=True, help="上月或修正版代理费汇总表")
     settlement.add_argument("--output-dir", required=True, help="输出文件夹")
     settlement.add_argument("--summary-name", help="输出汇总表文件名")
@@ -888,7 +916,9 @@ def main() -> None:
         summary_path, report_path, report = run_settlement(
             month=args.month,
             ledger_path=Path(args.ledger),
-            template_root=Path(args.template_root),
+            template_root=Path(args.template_root) if args.template_root else None,
+            proxy_template_dir=Path(args.proxy_template_dir) if args.proxy_template_dir else None,
+            inter_template_dir=Path(args.inter_template_dir) if args.inter_template_dir else None,
             summary_template=Path(args.summary_template),
             output_dir=Path(args.output_dir),
             final_summary_name=args.summary_name,

@@ -228,9 +228,9 @@ def read_ledger_rows(ledger_path: Path, month: int) -> tuple[list[DetailRow], li
     return proxy_rows, inter_rows
 
 
-def template_index(template_root: Path) -> dict[tuple[str, str, str], Path]:
+def template_index(proxy_template_root: Path, inter_template_root: Path) -> dict[tuple[str, str, str], Path]:
     result: dict[tuple[str, str, str], Path] = {}
-    roots = [("代理", template_root / "2026年代理 - 海南"), ("居间", template_root / "2026年居间 - 海南")]
+    roots = [("代理", proxy_template_root), ("居间", inter_template_root)]
     for kind, root in roots:
         if not root.exists():
             continue
@@ -407,7 +407,8 @@ def write_detail_sheet(
 
 def ensure_output_workbook(
     template_map: dict[tuple[str, str, str], Path],
-    template_root: Path,
+    proxy_template_root: Path,
+    inter_template_root: Path,
     output_root: Path,
     kind: str,
     owner: str,
@@ -416,10 +417,10 @@ def ensure_output_workbook(
     source = template_map.get((kind, norm_name(owner), norm_name(entity)))
     if source:
         if kind == "代理":
-            rel = source.relative_to(template_root / "2026年代理 - 海南")
+            rel = source.relative_to(proxy_template_root)
             target = output_root / "2026年代理 - 海南" / rel
         else:
-            rel = source.relative_to(template_root / "2026年居间 - 海南")
+            rel = source.relative_to(inter_template_root)
             target = output_root / "2026年居间 - 海南" / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
@@ -456,8 +457,13 @@ def build_split_files(
     month: int,
     proxy_rows: list[DetailRow],
     inter_rows: list[DetailRow],
+    *,
+    proxy_template_root: Path | None = None,
+    inter_template_root: Path | None = None,
 ) -> list[GroupTotal]:
-    template_map = template_index(template_root)
+    proxy_template_root = proxy_template_root or template_root / "2026年代理 - 海南"
+    inter_template_root = inter_template_root or template_root / "2026年居间 - 海南"
+    template_map = template_index(proxy_template_root, inter_template_root)
     grouped: dict[tuple[str, str, str], list[DetailRow]] = defaultdict(list)
     for row in proxy_rows:
         grouped[("代理", row.owner, row.entity)].append(row)
@@ -466,7 +472,15 @@ def build_split_files(
 
     totals: list[GroupTotal] = []
     for (kind, owner, entity), rows in sorted(grouped.items(), key=lambda x: (x[0][0], x[0][1], x[0][2])):
-        path, matched_existing_template = ensure_output_workbook(template_map, template_root, output_root, kind, owner, entity)
+        path, matched_existing_template = ensure_output_workbook(
+            template_map,
+            proxy_template_root,
+            inter_template_root,
+            output_root,
+            kind,
+            owner,
+            entity,
+        )
         wb = load_workbook(path)
         display_entity = prior_sheet_display_entity(wb, month) if matched_existing_template else entity
         ws = prepare_month_sheet(wb, month)

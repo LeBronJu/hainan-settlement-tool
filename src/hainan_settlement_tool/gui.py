@@ -60,7 +60,8 @@ class App:
         self.base_ledger_var = StringVar()
         self.reference_ledger_var = StringVar()
         self.completed_ledger_var = StringVar()
-        self.template_root_var = StringVar()
+        self.proxy_template_dir_var = StringVar()
+        self.inter_template_dir_var = StringVar()
         self.summary_template_var = StringVar()
         self.copy_reference_existing_var = BooleanVar(value=False)
         self.allow_missing_owner_var = BooleanVar(value=False)
@@ -75,7 +76,7 @@ class App:
         top.pack(fill="x", padx=12, pady=(10, 6))
         instruction = (
             "阶段1：基础台账 +（电量处理表 或 原始零售侧明细） -> 输出待整理台账，只写电量、新增客户名称和户号。\n"
-            "阶段2：人工整理后的台账 + 上月结算文件夹 + 上月/修正版汇总表 -> 输出代理/居间分表和汇总表。\n"
+            "阶段2：人工整理后的台账 + 上月代理分表文件夹 + 上月居间分表文件夹 + 上月/修正版汇总表 -> 输出代理/居间分表和汇总表。\n"
             "当月结算文件夹、输出文件夹、参考台账都是辅助项。所有结果只写入输出文件夹，不覆盖原始文件。"
         )
         Label(top, text=instruction, justify="left", anchor="w", wraplength=990).pack(fill="x", padx=10, pady=8)
@@ -100,12 +101,13 @@ class App:
         stage2 = LabelFrame(self.root, text="阶段2：生成结算成果")
         stage2.pack(fill="x", padx=12, pady=6)
         stage2.grid_columnconfigure(1, weight=1)
-        Label(stage2, text="必填：人工整理后的台账、上月结算文件夹、上月/修正版汇总表。", anchor="w").grid(
+        Label(stage2, text="必填：人工整理后的台账、上月代理分表文件夹、上月居间分表文件夹、上月/修正版汇总表。", anchor="w").grid(
             row=0, column=0, columnspan=5, sticky="we", padx=10, pady=(8, 2)
         )
         self._path_row(stage2, "人工整理后的台账(必填)", self.completed_ledger_var, 1, self.pick_completed_ledger)
-        self._path_row(stage2, "上月结算文件夹(必填)", self.template_root_var, 2, self.pick_template_root, kind="dir")
-        self._path_row(stage2, "上月/修正版汇总表(必填)", self.summary_template_var, 3, self.pick_summary_template)
+        self._path_row(stage2, "上月代理分表文件夹(必填)", self.proxy_template_dir_var, 2, self.pick_proxy_template_dir, kind="dir")
+        self._path_row(stage2, "上月居间分表文件夹(必填)", self.inter_template_dir_var, 3, self.pick_inter_template_dir, kind="dir")
+        self._path_row(stage2, "上月/修正版汇总表(必填)", self.summary_template_var, 4, self.pick_summary_template)
 
         advanced = LabelFrame(self.root, text="高级/可选")
         advanced.pack(fill="x", padx=12, pady=6)
@@ -328,10 +330,15 @@ class App:
         if path:
             self.completed_ledger_var.set(path)
 
-    def pick_template_root(self) -> None:
-        path = filedialog.askdirectory(title="选择上月结算文件夹")
+    def pick_proxy_template_dir(self) -> None:
+        path = filedialog.askdirectory(title="选择上月代理分表文件夹（2026年代理 - 海南）")
         if path:
-            self.template_root_var.set(path)
+            self.proxy_template_dir_var.set(path)
+
+    def pick_inter_template_dir(self) -> None:
+        path = filedialog.askdirectory(title="选择上月居间分表文件夹（2026年居间 - 海南）")
+        if path:
+            self.inter_template_dir_var.set(path)
 
     def pick_summary_template(self) -> None:
         path = filedialog.askopenfilename(title="选择上月/修正版汇总表", filetypes=[("Excel", "*.xlsx")])
@@ -497,13 +504,15 @@ class App:
     def run_settlement(self) -> None:
         def task() -> str:
             ledger = self._required_file(self.completed_ledger_var, "人工整理后的台账")
-            template_root = self._required_dir(self.template_root_var, "上月结算文件夹")
+            proxy_template_dir = self._required_dir(self.proxy_template_dir_var, "上月代理分表文件夹（2026年代理 - 海南）")
+            inter_template_dir = self._required_dir(self.inter_template_dir_var, "上月居间分表文件夹（2026年居间 - 海南）")
             summary_template = self._required_file(self.summary_template_var, "上月/修正版汇总表")
             self._progress("阶段2：正在读取人工整理后的台账并生成代理/居间分表")
             summary, report_path, report = run_settlement(
                 month=self.month_var.get(),
                 ledger_path=ledger,
-                template_root=template_root,
+                proxy_template_dir=proxy_template_dir,
+                inter_template_dir=inter_template_dir,
                 summary_template=summary_template,
                 output_dir=self._output_dir(),
                 allow_missing_owner=self.allow_missing_owner_var.get(),
