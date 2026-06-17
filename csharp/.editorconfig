@@ -1,0 +1,18 @@
+root = true
+
+[*.cs]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace
+
+[*.{csproj,sln,md}]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+indent_size = 2

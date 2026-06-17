@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>海南售电结算自动化工具</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HainanSettlementTool.Core\HainanSettlementTool.Core.csproj" />
+    <ProjectReference Include="..\HainanSettlementTool.Excel\HainanSettlementTool.Excel.csproj" />
+  </ItemGroup>
+</Project>
