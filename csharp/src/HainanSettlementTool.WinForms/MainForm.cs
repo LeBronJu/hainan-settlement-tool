@@ -148,6 +148,7 @@ namespace HainanSettlementTool.WinForms
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 3,
+                RowCount = 1,
                 AutoSize = true,
                 Padding = new Padding(20, 18, 20, 20),
                 BackColor = PanelBackground
@@ -155,6 +156,7 @@ namespace HainanSettlementTool.WinForms
             form.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
             form.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             form.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92));
+            form.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             form.Controls.Add(SectionTitle("阶段一输入"), 0, 0);
             form.SetColumnSpan(form.GetControlFromPosition(0, 0), 3);
@@ -177,7 +179,8 @@ namespace HainanSettlementTool.WinForms
             _copyReferenceExisting.ForeColor = MainText;
             _copyReferenceExisting.AutoSize = true;
             _copyReferenceExisting.Margin = new Padding(153, 12, 0, 12);
-            form.Controls.Add(_copyReferenceExisting, 0, form.RowCount++);
+            var checkboxRow = AddRow(form);
+            form.Controls.Add(_copyReferenceExisting, 0, checkboxRow);
             form.SetColumnSpan(_copyReferenceExisting, 3);
 
             var actions = new FlowLayoutPanel
@@ -193,7 +196,8 @@ namespace HainanSettlementTool.WinForms
             StylePrimaryButton(_runStage1);
             _runStage1.Click += async (sender, args) => await RunStage1Async();
             actions.Controls.Add(_runStage1);
-            form.Controls.Add(actions, 0, form.RowCount++);
+            var actionRow = AddRow(form);
+            form.Controls.Add(actions, 0, actionRow);
             form.SetColumnSpan(actions, 3);
 
             return form;
@@ -339,8 +343,7 @@ namespace HainanSettlementTool.WinForms
 
         private static void AddControlRow(TableLayoutPanel form, string label, Control control, Button button)
         {
-            var row = form.RowCount++;
-            form.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            var row = AddRow(form);
             form.Controls.Add(new Label
             {
                 Text = label,
@@ -358,6 +361,18 @@ namespace HainanSettlementTool.WinForms
                 button.Margin = new Padding(0, 5, 0, 5);
                 form.Controls.Add(button, 2, row);
             }
+            else
+            {
+                form.Controls.Add(new Panel { Dock = DockStyle.Fill, Height = 1 }, 2, row);
+            }
+        }
+
+        private static int AddRow(TableLayoutPanel form)
+        {
+            var row = form.RowCount;
+            form.RowCount = row + 1;
+            form.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            return row;
         }
 
         private static void AddPathRow(TableLayoutPanel form, string label, TextBox textBox, string filter)
