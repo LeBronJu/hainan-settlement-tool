@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This repository contains the local desktop automation tool for Hainan retail electricity settlement work. Treat it as a real engineering project, not a one-off script.
+This repository contains the Python desktop automation tool for Hainan retail electricity settlement work. Treat it as a real engineering project, not a one-off script.
 
 ## Safety Rules
 
@@ -12,26 +12,15 @@ This repository contains the local desktop automation tool for Hainan retail ele
 
 ## Repository Layout
 
-- `src/hainan_settlement_tool/`: Python production tool. This is still the practical baseline for full stage 1 and stage 2 behavior.
+- `src/hainan_settlement_tool/`: Python production tool and current full-featured baseline.
 - `scripts/`: packaging and helper scripts for the Python version.
-- `csharp/`: C# rewrite in progress.
-- `csharp/src/HainanSettlementTool.WinForms/`: desktop UI only.
-- `csharp/src/HainanSettlementTool.Core/`: business models, services, interfaces.
-- `csharp/src/HainanSettlementTool.Excel/`: ClosedXML workbook implementation.
-- `csharp/docs/architecture.md`: C# layering and migration boundary.
 - `HANDOFF.md`: current project status and next-step notes.
 
-## Current Branch
+## Related Repositories
 
-Main C# rewrite work is on `codex/csharp-stage1`.
+The C# desktop rewrite has been split into a standalone repository:
 
-Recent relevant commits:
-
-- `9866b00 Fix WinForms input layout alignment`
-- `6537e26 Modernize WinForms stage1 UI`
-- `0b07906 Start C# stage1 rewrite`
-- `3007857 Select split template folders separately`
-- `08108a9 Initial hainan settlement tool`
+- `https://github.com/LeBronJu/hainan-settlement-desktop`
 
 ## Business Workflow Summary
 
@@ -55,21 +44,7 @@ Stage 1 should be robust and conservative. Stage 2 should not assume missing bus
 - Special historical months before March 2026 may be irregular. Do not overfit C# rules to January/February quirks unless the user asks.
 - March 2026 matters as an active review/correction month; February and earlier should generally be treated as settled historical reference.
 
-## C# Rewrite Principles
-
-- UI must not contain Excel parsing, matching, amount calculation, or template rules.
-- Core must not reference ClosedXML, WinForms, or workbook-specific details.
-- Excel layer owns workbook reading/writing and template copying.
-- Keep stage boundaries explicit. Stage 1 currently ends at a ledger needing human review plus a JSON report.
-- Do not migrate stage 2 until stage 1 is stable against real working copies and/or sanitized samples.
-
 ## Build Commands
-
-Preferred C# build command:
-
-```powershell
-& "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" "D:\Document\文件处理\hainan-settlement-tool\csharp\HainanSettlementTool.sln" /restore /p:Configuration=Debug /m
-```
 
 Python development command:
 
@@ -85,10 +60,7 @@ Python packaging command:
 powershell -ExecutionPolicy Bypass -File .\scripts\build_exe.ps1
 ```
 
-## Known Compatibility Direction
+## Notes
 
-- C# target is `net472` for Windows 7 SP1 compatibility.
-- Running C# builds requires .NET Framework 4.7.2 or newer on the target machine.
-- Development machine now has .NET SDK 8/9 and VS Build Tools 2022 installed.
-- C# app currently builds successfully with 0 warnings and 0 errors.
-
+- This repository should not regain a `csharp/` project directory. Put C# work in `hainan-settlement-desktop`.
+- Python remains useful as the behavior reference when porting features to C#.

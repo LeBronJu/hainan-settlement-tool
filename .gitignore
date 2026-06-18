@@ -10,12 +10,6 @@ build/
 dist/
 *.spec
 
-csharp/**/bin/
-csharp/**/obj/
-csharp/.vs/
-csharp/packages/
-csharp/TestResults/
-
 outputs/
 *.xlsx
 *.xls

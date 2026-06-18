@@ -9,17 +9,18 @@
 - 保留原始文件，结果统一写入输出文件夹。
 - 支持运行日志、文件占用提示、Excel 公式重算。
 
-## C# 重构版
+## C# 桌面版
 
-C# 重构版位于 `csharp/`，当前在 `codex/csharp-stage1` 分支推进。它按 WinForms / Core / Excel 三层拆分，第一阶段目标是迁移“阶段1：电量导入台账”。
+C# 桌面版已经拆分为独立项目和独立 GitHub 仓库：
 
-Python 版仍是当前可用主版本；C# 版在脱敏样例和真实工作副本验证完成前，不视为替代版本。
+- `https://github.com/LeBronJu/hainan-settlement-desktop`
+
+本仓库保留 Python 版工具，作为完整功能基线和历史实现参考。
 
 ## 项目文档
 
 - `AGENTS.md`：给后续开发 agent 的项目规则、业务口径和安全边界。
 - `HANDOFF.md`：当前上下文压缩版，用于长对话后接续工作。
-- `csharp/docs/architecture.md`：C# 重构版分层和迁移边界。
 
 ## 阶段1需要的文件
 
