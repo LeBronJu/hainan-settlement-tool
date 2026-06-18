@@ -32,8 +32,23 @@ csharp/
 - 开发：Visual Studio 2022 或具备 .NET Framework 4.7.2 targeting pack 的 MSBuild 环境。
 - 运行：Windows 7 SP1 及以上，需安装 .NET Framework 4.7.2 或更高版本。
 
+## 开发环境状态
+
+当前开发机已经安装并验证：
+
+- .NET SDK 8/9
+- Visual Studio Build Tools 2022
+- .NET Framework 4.7.2 targeting pack / SDK
+
+推荐编译命令：
+
+```powershell
+& "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" ".\HainanSettlementTool.sln" /restore /p:Configuration=Debug /m
+```
+
+当前 C# 解决方案已编译通过，结果为 `0 个警告 / 0 个错误`。
+
 ## 重要限制
 
 - C# 第一版暂不直接清洗 `.xls` 原始明细；请先另存为 `.xlsx`，或使用已清洗的电量处理表。
 - 公式重算、阶段2分表/汇总表生成还没有迁移。
-- 当前机器没有 .NET SDK/MSBuild，代码已按项目结构创建，但尚未在本机完成编译验证。
